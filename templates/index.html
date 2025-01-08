@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner with AR</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1b1b1b;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #39ff14; /* Neón verde */
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14;
+        }
+
+        h3 {
+            color: #ff007f; /* Neón rosa */
+            margin-top: 20px;
+            text-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f, 0 0 30px #ff007f;
+        }
+
+        button {
+            background-color: #ff007f; /* Neón rosa */
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px #ff007f, 0 0 20px #ff007f;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #39ff14; /* Neón verde */
+            box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+        }
+
+        input[type="file"] {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #39ff14;
+        }
+
+        input[type="file"]:hover {
+            background-color: #444;
+            border-color: #ff007f;
+        }
+
+        #result {
+            margin-top: 30px;
+        }
+
+        img {
+            border-radius: 10px;
+            box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Escanea tu código QR</h1>
+        <form id="qr-form" action="/scan_qr" method="POST" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Escanear QR</button>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('qr-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+    
+            // Enviar el formulario con la imagen
+            const response = await fetch('/scan_qr', {
+                method: 'POST',
+                body: formData
+            });
+    
+            // Obtener la respuesta JSON
+            const data = await response.json();
+            const resultDiv = document.getElementById('result');
+    
+            // Verificar si el escaneo fue exitoso
+            if (data.success) {
+                // Si el contenido QR es una URL externa
+                if (data.data.startsWith('http')) {
+                    resultDiv.innerHTML = `<h3>Contenido QR: ${data.data}</h3>
+                                           <img src="${data.data}" alt="Contenido AR" width="300">`;
+                } else {
+                    // Si el contenido QR es un archivo local (ruta relativa)
+                    resultDiv.innerHTML = `<h3>Contenido QR: ${data.data}</h3>
+                                           <img src="/static/ar_content/${data.data}" alt="Contenido AR" width="300">`;
+                }
+            } else {
+                resultDiv.innerHTML = `<h3>Error: ${data.message}</h3>`;
+            }
+        };
+    </script>
+</body>
+</html>
